@@ -1,11 +1,158 @@
 import mammoth from 'mammoth';
 import { createWorker } from 'tesseract.js';
+import JSZip from 'jszip';
 
 export interface ExtractedDocumentResult {
   text: string;
   pageCount?: number;
   wordCount: number;
   ocrApplied?: boolean;
+}
+
+/**
+ * Extracts text and speaker notes from modern OpenXML PowerPoint presentations (.pptx)
+ */
+async function parsePptxBuffer(buffer: Buffer): Promise<ExtractedDocumentResult> {
+  const zip = await JSZip.loadAsync(buffer);
+
+  // Find all slide files
+  const slideFiles = Object.keys(zip.files).filter(name =>
+    /^ppt\/slides\/slide\d+\.xml$/i.test(name)
+  );
+
+  if (slideFiles.length === 0) {
+    throw new Error('The PPTX file contains no recognizable slides.');
+  }
+
+  // Sort slides in natural numerical order (slide1, slide2, slide10, etc.)
+  slideFiles.sort((a, b) => {
+    const numA = parseInt(a.match(/slide(\d+)\.xml/i)?.[1] || '0', 10);
+    const numB = parseInt(b.match(/slide(\d+)\.xml/i)?.[1] || '0', 10);
+    return numA - numB;
+  });
+
+  const slideTexts: string[] = [];
+
+  for (let i = 0; i < slideFiles.length; i++) {
+    const filename = slideFiles[i];
+    const xml = await zip.file(filename)!.async('string');
+
+    // Extract text runs inside <a:t>...</a:t> grouped by paragraphs <a:p>
+    const paraRegex = /<a:p[\s>]([\s\S]*?)<\/a:p>/gi;
+    const paragraphs: string[] = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = paraRegex.exec(xml)) !== null) {
+      const paraContent = match[1];
+      const textMatches = paraContent.match(/<a:t[\s>]([^<]*)<\/a:t>/gi) || [];
+      const textLine = textMatches
+        .map(t => t.replace(/<[^>]+>/g, '').trim())
+        .filter(Boolean)
+        .join(' ');
+
+      if (textLine) {
+        paragraphs.push(textLine);
+      }
+    }
+
+    // Check for optional speaker notes in ppt/notesSlides/notesSlide{N}.xml
+    const noteFile = `ppt/notesSlides/notesSlide${i + 1}.xml`;
+    let noteText = '';
+    const noteZipEntry = zip.file(new RegExp(`ppt/notesSlides/notesSlide${i + 1}\\.xml$`, 'i'))[0];
+    if (noteZipEntry) {
+      const noteXml = await noteZipEntry.async('string');
+      const noteMatches = noteXml.match(/<a:t[\s>]([^<]*)<\/a:t>/gi) || [];
+      noteText = noteMatches
+        .map(t => t.replace(/<[^>]+>/g, '').trim())
+        .filter(Boolean)
+        .join(' ');
+    }
+
+    if (paragraphs.length > 0 || noteText) {
+      const slideHeader = `### Slide ${i + 1}${paragraphs[0] ? `: ${paragraphs[0]}` : ''}`;
+      const body = paragraphs.length > 1 ? paragraphs.slice(1).join('\n') : paragraphs.join('\n');
+      const notes = noteText ? `\n*Speaker Notes:* ${noteText}` : '';
+      slideTexts.push(`${slideHeader}\n${body}${notes}`);
+    } else {
+      slideTexts.push(`### Slide ${i + 1}\n*(Visual slide without text)*`);
+    }
+  }
+
+  const fullText = slideTexts.join('\n\n').trim();
+  if (!fullText) {
+    throw new Error('No readable text could be extracted from this PowerPoint presentation.');
+  }
+
+  return {
+    text: fullText,
+    pageCount: slideFiles.length,
+    wordCount: fullText.split(/\s+/).filter(Boolean).length,
+    ocrApplied: false,
+  };
+}
+
+/**
+ * Extracts text from legacy binary PowerPoint presentations (.ppt, PowerPoint 97-2003)
+ */
+function parsePptBinaryBuffer(buffer: Buffer): ExtractedDocumentResult {
+  const strings: string[] = [];
+
+  // Scan binary records for TextCharsAtom (0x0FA0) and TextBytesAtom (0x0FA8)
+  for (let i = 0; i < buffer.length - 8; i++) {
+    const recType = buffer.readUInt16LE(i + 2);
+    const recLen = buffer.readUInt32LE(i + 4);
+
+    // TextBytesAtom (ASCII 8-bit text)
+    if (recType === 0x0FA8 && recLen > 0 && recLen < 200000 && i + 8 + recLen <= buffer.length) {
+      const text = buffer.toString('utf8', i + 8, i + 8 + recLen).trim();
+      if (text.length > 2 && /^[\x20-\x7E\s\r\n\t]+$/.test(text)) {
+        strings.push(text);
+      }
+    }
+    // TextCharsAtom (UTF-16LE 16-bit text)
+    else if (recType === 0x0FA0 && recLen > 0 && recLen < 400000 && i + 8 + recLen <= buffer.length) {
+      const text = buffer.toString('utf16le', i + 8, i + 8 + recLen).trim();
+      if (text.length > 2 && !/[\u0000-\u0008\u000E-\u001F]/.test(text)) {
+        strings.push(text);
+      }
+    }
+  }
+
+  // Fallback: extract contiguous printable text blocks
+  if (strings.length === 0) {
+    const utf8Str = buffer.toString('utf8');
+    const matches = utf8Str.match(/[\x20-\x7E]{6,}/g) || [];
+    const filtered = matches.filter(s =>
+      !/^[0-9a-f]{8,}$/i.test(s) &&
+      !s.includes('Microsoft') &&
+      !s.includes('PowerPoint') &&
+      !s.includes('Current User')
+    );
+    strings.push(...filtered);
+  }
+
+  // Deduplicate and assemble
+  const uniqueStrings = Array.from(new Set(strings)).filter(s => s.length > 2);
+  if (uniqueStrings.length === 0) {
+    throw new Error('No readable text could be extracted from this binary PowerPoint (.ppt) document.');
+  }
+
+  // Group into slides
+  const slides: string[] = [];
+  let currentSlide = 1;
+  for (let i = 0; i < uniqueStrings.length; i += 3) {
+    const group = uniqueStrings.slice(i, i + 3).join('\n\n');
+    slides.push(`### Slide ${currentSlide++}\n${group}`);
+  }
+
+  const fullText = slides.join('\n\n').trim();
+
+  return {
+    text: fullText,
+    pageCount: slides.length || 1,
+    wordCount: fullText.split(/\s+/).filter(Boolean).length,
+    ocrApplied: false,
+  };
 }
 
 export async function parseDocumentBuffer(
@@ -31,7 +178,6 @@ export async function parseDocumentBuffer(
   // 2. PDF Documents
   if (mime.includes('pdf') || ext === 'pdf') {
     try {
-      // Dynamic import / require of pdf-parse to handle node runtime
       const pdfParse = require('pdf-parse');
       const data = await pdfParse(buffer);
       const text = (data.text || '').trim();
@@ -76,7 +222,28 @@ export async function parseDocumentBuffer(
     }
   }
 
-  // 4. Images (OCR Optical Character Recognition for scans and handwritten notes)
+  // 4. PowerPoint Presentations (.pptx and .ppt)
+  if (
+    mime.includes('presentationml') ||
+    mime.includes('powerpoint') ||
+    ext === 'pptx' ||
+    ext === 'ppt'
+  ) {
+    try {
+      // Check if it's modern OpenXML PPTX (ZIP container)
+      const isZip = buffer.length > 4 && buffer[0] === 0x50 && buffer[1] === 0x4b;
+      if (ext === 'pptx' || isZip) {
+        return await parsePptxBuffer(buffer);
+      } else {
+        // Legacy binary PowerPoint (.ppt)
+        return parsePptBinaryBuffer(buffer);
+      }
+    } catch (err: any) {
+      throw new Error(`Failed to parse PowerPoint presentation: ${err.message || 'Unsupported presentation format'}`);
+    }
+  }
+
+  // 5. Images (OCR Optical Character Recognition for scans and handwritten notes)
   if (mime.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(ext)) {
     try {
       const worker = await createWorker('eng');
@@ -99,5 +266,5 @@ export async function parseDocumentBuffer(
     }
   }
 
-  throw new Error(`Unsupported document format (.${ext}). Wildwood Academy supports PDF, DOCX, TXT, Markdown, and PNG/JPEG/WebP images.`);
+  throw new Error(`Unsupported document format (.${ext}). Wildwood Academy supports PDF, DOCX, PPT/PPTX presentations, TXT, Markdown, and PNG/JPEG/WebP images.`);
 }

@@ -389,7 +389,7 @@ VALUES (
   'study_materials',
   false,
   52428800, -- 50 MB limit
-  ARRAY['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'text/plain', 'text/markdown', 'image/png', 'image/jpeg', 'image/webp']
+  ARRAY['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-powerpoint', 'text/plain', 'text/markdown', 'image/png', 'image/jpeg', 'image/webp']
 )
 ON CONFLICT (id) DO NOTHING;
 

@@ -5,6 +5,12 @@
       "email": "merlin@wildwood.edu",
       "password_hash": "fd02b8ae863d5b0e7e0f73011b7a9ae7:c33a319aedc627150ddd7c8aeff73d76497f152c384d269f7810313a3abd8d18132daa15b7050d2ed37b2d8794e1f4c8320c05ebef82ce15d8c522b2eb6f214d",
       "created_at": "2026-10-31T21:11:49.273Z"
+    },
+    {
+      "id": "e10e2968-fc98-4730-aa7c-fa5089a29091",
+      "email": "m.navya3003@gmail.com",
+      "password_hash": "ff19be4362c9f5d8381ea1ee4a311069:ca9940aaefa995c456140a69a411877d71b6a5d9b4e990d54186dac097a567c4b1b9277e1273fd1d509d9f9cba860ececc98efc148138be862a84648afe21761",
+      "created_at": "2026-10-31T21:15:05.374Z"
     }
   ],
   "profiles": [
@@ -25,6 +31,24 @@
       "last_active_at": "2026-10-31T21:11:49.273Z",
       "created_at": "2026-10-31T21:11:49.273Z",
       "updated_at": "2026-10-31T21:11:49.273Z"
+    },
+    {
+      "id": "e10e2968-fc98-4730-aa7c-fa5089a29091",
+      "email": "m.navya3003@gmail.com",
+      "display_name": "navya ",
+      "avatar_url": "/avatars/apprentice.svg",
+      "learning_preferences": {
+        "style": "socratic",
+        "pace": "moderate",
+        "tone": "scholarly_whimsical",
+        "notes_preference": "detailed"
+      },
+      "xp": 25,
+      "level": 1,
+      "streak_days": 1,
+      "last_active_at": "2026-10-31T21:15:05.374Z",
+      "created_at": "2026-10-31T21:15:05.374Z",
+      "updated_at": "2026-10-31T21:15:05.374Z"
     }
   ],
   "subjects": [],
@@ -47,6 +71,22 @@
       "description": "Synthesize knowledge and apply principles to real-world problem sets.",
       "order_index": 1,
       "created_at": "2026-10-31T21:07:44.901Z"
+    },
+    {
+      "id": "2e885c6c-8d37-429e-a747-9d2d7a52ed40",
+      "course_id": "7982b08c-9011-41f3-bea9-aef413ed206a",
+      "title": "Module 1: Foundations & Core Concepts",
+      "description": "Exploration of fundamental definitions and principles found in Woodland Ecology Foundations.",
+      "order_index": 0,
+      "created_at": "2026-10-31T21:19:05.433Z"
+    },
+    {
+      "id": "76326eb9-c765-4681-a0a7-de8339f133f8",
+      "course_id": "7982b08c-9011-41f3-bea9-aef413ed206a",
+      "title": "Module 2: Advanced Synthesis & Practice",
+      "description": "Synthesize knowledge and apply principles to real-world problem sets.",
+      "order_index": 1,
+      "created_at": "2026-10-31T21:19:05.433Z"
     }
   ],
   "lessons": [],
@@ -114,6 +154,67 @@
       "quiz_id": "cad4ebc0-eec9-4ed9-8b02-26782ffaea08",
       "order_index": 3,
       "created_at": "2026-10-31T21:07:44.909Z"
+    },
+    {
+      "question_text": "What is the primary objective of studying the principles in \"Woodland Ecology Foundations\"?",
+      "question_type": "multiple_choice",
+      "options": [
+        "To build a coherent conceptual framework for analytical problem-solving",
+        "To memorize arbitrary trivia without practical application",
+        "To discard earlier foundational research",
+        "To avoid engaging with structured learning materials"
+      ],
+      "correct_answer": "To build a coherent conceptual framework for analytical problem-solving",
+      "explanation": "Foundational study aims to provide mental scaffolding and practical methodologies for deep understanding.",
+      "grading_criteria": "Exact match with the primary objective option.",
+      "id": "8e4f0461-bd3a-4078-ae7c-8a751e7ccbe6",
+      "quiz_id": "b91211be-b96a-4596-9548-7673f523022c",
+      "order_index": 0,
+      "created_at": "2026-10-31T21:19:05.441Z"
+    },
+    {
+      "question_text": "True or False: Valid analytical models require inspecting boundary conditions and assumptions.",
+      "question_type": "true_false",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct_answer": "True",
+      "explanation": "Rigorous scholarship requires testing assumptions and understanding where principles remain valid.",
+      "grading_criteria": "Must select True.",
+      "id": "8cf11f7d-2c8a-4d59-8e63-ebabb012f907",
+      "quiz_id": "b91211be-b96a-4596-9548-7673f523022c",
+      "order_index": 1,
+      "created_at": "2026-10-31T21:19:05.441Z"
+    },
+    {
+      "question_text": "In the context of Woodland Ecology Foundations, how do individual subcomponents contribute to overall system stability?",
+      "question_type": "multiple_choice",
+      "options": [
+        "They operate interactively, where changes in one element affect the whole equilibrium",
+        "They function completely in isolation with zero dependencies",
+        "Subcomponents have no measurable effect on stability",
+        "They only operate when manually perturbed by external actors"
+      ],
+      "correct_answer": "They operate interactively, where changes in one element affect the whole equilibrium",
+      "explanation": "Interconnected components collectively determine overall behavior and stability.",
+      "grading_criteria": "Exact option match.",
+      "id": "87c1f50b-1b0f-450e-b608-94c72c8c9f8a",
+      "quiz_id": "b91211be-b96a-4596-9548-7673f523022c",
+      "order_index": 2,
+      "created_at": "2026-10-31T21:19:05.441Z"
+    },
+    {
+      "question_text": "What term describes the systematic analysis of methods applied to a field of study?",
+      "question_type": "short_answer",
+      "options": [],
+      "correct_answer": "Methodology",
+      "explanation": "Methodology refers specifically to the theoretical and systematic analysis of investigative methods.",
+      "grading_criteria": "Accepts \"methodology\" or phrases containing \"systematic method\".",
+      "id": "908df372-9f0d-462a-bf96-4b3fe75db91e",
+      "quiz_id": "b91211be-b96a-4596-9548-7673f523022c",
+      "order_index": 3,
+      "created_at": "2026-10-31T21:19:05.441Z"
     }
   ],
   "quiz_attempts": [],
@@ -130,6 +231,16 @@
       "icon": "Sprout",
       "xp_reward": 25,
       "earned_at": "2026-10-31T21:11:49.273Z"
+    },
+    {
+      "id": "049ca2bb-7596-4297-8988-a88d90388131",
+      "user_id": "e10e2968-fc98-4730-aa7c-fa5089a29091",
+      "achievement_key": "first_steps",
+      "title": "First Steps in the Grove",
+      "description": "Entered Wildwood Academy and registered your scholar journal.",
+      "icon": "Sprout",
+      "xp_reward": 25,
+      "earned_at": "2026-10-31T21:15:05.374Z"
     }
   ],
   "game_sessions": [],

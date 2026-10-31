@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword, createToken, verifyToken } from '../src/l
 import { chunkText } from '../src/lib/processing/chunker';
 import { parseDocumentBuffer } from '../src/lib/processing/document-parser';
 import { AIService } from '../src/lib/ai/ai-service';
+import JSZip from 'jszip';
 
 let passed = 0;
 let failed = 0;
@@ -75,6 +76,42 @@ Deciduous species adapt their chlorophyll concentrations across seasonal transit
   assert(chunks.length >= 2, `Chunker split text into ${chunks.length} overlapping chunks`);
   assert(chunks[0].chunk_index === 0, 'Chunk indexing starts at 0');
   assert(Boolean(chunks[0].section_title), 'Chunker correctly extracted section titles');
+
+  // Test PowerPoint PPTX parsing
+  console.log('  Testing PowerPoint (.pptx) presentation extraction...');
+  const pptxZip = new JSZip();
+  pptxZip.file('ppt/slides/slide1.xml', '<p:sp><p:txBody><a:p><a:r><a:t>Botanical Principles</a:t></a:r></a:p><a:p><a:r><a:t>• Flora Taxonomy</a:t></a:r></a:p></p:txBody></p:sp>');
+  pptxZip.file('ppt/slides/slide2.xml', '<p:sp><p:txBody><a:p><a:r><a:t>Mycorrhizal Symbiosis</a:t></a:r></a:p><a:p><a:r><a:t>• Subterranean networks</a:t></a:r></a:p></p:txBody></p:sp>');
+  pptxZip.file('ppt/notesSlides/notesSlide2.xml', '<p:sp><p:txBody><a:p><a:r><a:t>Remember kin seedling allocation hypothesis</a:t></a:r></a:p></p:txBody></p:sp>');
+  const pptxBuffer = await pptxZip.generateAsync({ type: 'nodebuffer' });
+
+  const parsedPptx = await parseDocumentBuffer(
+    pptxBuffer,
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'botany_presentation.pptx'
+  );
+
+  assert(parsedPptx.pageCount === 2, `PPTX parser identified ${parsedPptx.pageCount} slides`);
+  assert(parsedPptx.text.includes('Slide 1: Botanical Principles'), 'PPTX parser extracted Slide 1 header and title');
+  assert(parsedPptx.text.includes('Mycorrhizal Symbiosis'), 'PPTX parser extracted Slide 2 text content');
+  assert(parsedPptx.text.includes('Remember kin seedling allocation hypothesis'), 'PPTX parser extracted slide speaker notes');
+
+  // Test Legacy PowerPoint PPT binary parsing
+  console.log('  Testing Legacy PowerPoint (.ppt) binary extraction...');
+  const pptBuf = Buffer.alloc(128);
+  pptBuf.writeUInt16LE(0, 0);
+  pptBuf.writeUInt16LE(0x0FA8, 2); // TextBytesAtom
+  pptBuf.writeUInt32LE(28, 4);
+  pptBuf.write('Woodland Legacy Presentation', 8, 'utf8');
+
+  const parsedPpt = await parseDocumentBuffer(
+    pptBuf,
+    'application/vnd.ms-powerpoint',
+    'ancient_lecture.ppt'
+  );
+
+  assert(parsedPpt.text.includes('Woodland Legacy Presentation'), 'Legacy PPT binary parser extracted text records');
+  assert(parsedPpt.pageCount! >= 1, `Legacy PPT parser assigned pageCount: ${parsedPpt.pageCount}`);
 
   // Save study material for User A
   const materialA = await Repository.createMaterial(userA.id, {

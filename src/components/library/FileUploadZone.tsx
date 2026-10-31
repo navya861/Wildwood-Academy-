@@ -20,12 +20,12 @@ export function FileUploadZone({ onUploadSuccess }: FileUploadZoneProps) {
     const file = files[0];
 
     // Validation
-    const validExtensions = ['.pdf', '.docx', '.txt', '.md', '.markdown', '.png', '.jpg', '.jpeg', '.webp'];
+    const validExtensions = ['.pdf', '.docx', '.pptx', '.ppt', '.txt', '.md', '.markdown', '.png', '.jpg', '.jpeg', '.webp'];
     const fileNameLower = file.name.toLowerCase();
     const isValid = validExtensions.some(ext => fileNameLower.endsWith(ext));
 
     if (!isValid) {
-      setErrorMessage(`Unsupported format. Wildwood Academy accepts PDF, DOCX, TXT, Markdown, and PNG/JPEG/WebP images.`);
+      setErrorMessage(`Unsupported format. Wildwood Academy accepts PDF, DOCX, PPT/PPTX presentations, TXT, Markdown, and PNG/JPEG/WebP images.`);
       return;
     }
 
@@ -93,7 +93,7 @@ export function FileUploadZone({ onUploadSuccess }: FileUploadZoneProps) {
           type="file"
           ref={fileInputRef}
           onChange={(e) => handleFiles(e.target.files)}
-          accept=".pdf,.docx,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp"
+          accept=".pdf,.docx,.pptx,.ppt,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp"
           className="hidden"
         />
 
@@ -114,7 +114,7 @@ export function FileUploadZone({ onUploadSuccess }: FileUploadZoneProps) {
               Drag & drop your files here, or <span className="text-lantern underline">browse parchment</span>
             </p>
             <p className="text-xs text-sage/60 mt-2 font-mono">
-              Accepts PDF, DOCX, TXT, Markdown, and Scanned Notes (OCR) · Up to 25MB
+              Accepts PDF, DOCX, PPT/PPTX Slides, TXT, Markdown, and Scanned Notes (OCR) · Up to 25MB
             </p>
           </div>
 
