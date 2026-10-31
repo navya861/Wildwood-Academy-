@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --forest-900: #0D241B;
+  --forest: #173F30;
+  --forest-light: #225341;
+  --moss: #527B57;
+  --sage: #A7B99A;
+  --parchment: #F5EBD5;
+  --parchment-light: #FDF8ED;
+  --lantern: #F2BE64;
+  --ink: #26372C;
+}
+
+body {
+  background-color: #0D241B;
+  color: #F5EBD5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar for Enchanted Feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D241B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2F6B55;
+  border-radius: 4px;
+  border: 1px solid #527B57;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #527B57;
+}
+
+/* Headings */
+h1, h2, h3, h4, .font-serif-title {
+  font-family: 'Cinzel', Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+/* Woodland Glow & Texture Utilities */
+.woodland-panel {
+  background: rgba(23, 63, 48, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(167, 185, 154, 0.2);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px -5px rgba(13, 36, 27, 0.5);
+}
+
+.woodland-panel:hover {
+  border-color: rgba(242, 190, 100, 0.4);
+}
+
+.parchment-panel {
+  background: #FDF8ED;
+  color: #26372C;
+  border: 1px solid #E8D9B8;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px -2px rgba(38, 55, 44, 0.15);
+}
+
+.lantern-glow {
+  box-shadow: 0 0 25px -4px rgba(242, 190, 100, 0.35);
+}
+
+.lantern-glow-strong {
+  box-shadow: 0 0 35px 2px rgba(242, 190, 100, 0.6);
+}
+
+/* Card hover subtle shimmer */
+.hover-shimmer {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.hover-shimmer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -4px rgba(242, 190, 100, 0.25);
+  border-color: rgba(242, 190, 100, 0.5);
+}
