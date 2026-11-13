@@ -2,26 +2,35 @@ import React from 'react';
 import Link from 'next/link';
 import { Compass, Library, Bot, BookOpenCheck, Feather, Swords, Sparkles, Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { WoodlandScene } from '@/components/woodland/WoodlandScene';
 
 export default function LandingPage() {
   return (
-    <div className="max-w-6xl mx-auto py-8 md:py-16 space-y-16">
-      {/* Hero Section */}
-      <div className="text-center space-y-6 relative">
+    <div className="max-w-6xl mx-auto py-6 md:py-12 space-y-12">
+      {/* Woodland Scene Centerpiece Banner */}
+      <WoodlandScene
+        variant="hero"
+        title="Welcome to Wildwood Academy"
+        subtitle="Step into our enchanted forest academy where study scrolls, slide decks, and notes awaken under lantern light with your personal AI guide."
+        showExploreButtons={true}
+      />
+
+      {/* Hero Call to Action Section */}
+      <div className="text-center space-y-6 relative pt-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-forest-800/90 border border-lantern/40 text-lantern text-xs font-semibold shadow-lantern animate-float-gentle">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Full-Stack AI-Powered Learning Management System</span>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-serif font-extrabold text-parchment tracking-tight max-w-4xl mx-auto leading-tight">
+        <h1 className="text-3xl md:text-5xl font-serif font-extrabold text-parchment tracking-tight max-w-4xl mx-auto leading-tight">
           Where Ancient Wisdom Meets <span className="text-lantern underline decoration-lantern/40">Intelligent Lore</span>
         </h1>
 
-        <p className="text-base md:text-lg text-sage max-w-2xl mx-auto leading-relaxed">
-          Enshrine your study scrolls, PDFs, and notes into structured woodland courses. Learn with a source-grounded AI tutor, penn personalized revision notes, conquer trial quizzes, and watch your botanical knowledge grow.
+        <p className="text-sm md:text-base text-sage max-w-2xl mx-auto leading-relaxed">
+          Enshrine your PowerPoint presentations, PDFs, and notes into structured woodland courses. Learn with a source-grounded AI tutor, penn personalized revision notes, conquer trial quizzes, and watch your botanical knowledge grow.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <Link href="/auth/signup">
             <Button variant="primary" size="lg" className="gap-2 shadow-lantern text-base px-8 py-3.5">
               <span>Enroll as an Apprentice Scholar</span>

@@ -1,12 +1,14 @@
 import mammoth from 'mammoth';
 import { createWorker } from 'tesseract.js';
 import JSZip from 'jszip';
+import { SlideData } from '../types';
 
 export interface ExtractedDocumentResult {
   text: string;
   pageCount?: number;
   wordCount: number;
   ocrApplied?: boolean;
+  slides?: SlideData[];
 }
 
 /**
@@ -32,6 +34,7 @@ async function parsePptxBuffer(buffer: Buffer): Promise<ExtractedDocumentResult>
   });
 
   const slideTexts: string[] = [];
+  const structuredSlides: SlideData[] = [];
 
   for (let i = 0; i < slideFiles.length; i++) {
     const filename = slideFiles[i];
@@ -56,7 +59,6 @@ async function parsePptxBuffer(buffer: Buffer): Promise<ExtractedDocumentResult>
     }
 
     // Check for optional speaker notes in ppt/notesSlides/notesSlide{N}.xml
-    const noteFile = `ppt/notesSlides/notesSlide${i + 1}.xml`;
     let noteText = '';
     const noteZipEntry = zip.file(new RegExp(`ppt/notesSlides/notesSlide${i + 1}\\.xml$`, 'i'))[0];
     if (noteZipEntry) {
@@ -68,14 +70,19 @@ async function parsePptxBuffer(buffer: Buffer): Promise<ExtractedDocumentResult>
         .join(' ');
     }
 
-    if (paragraphs.length > 0 || noteText) {
-      const slideHeader = `### Slide ${i + 1}${paragraphs[0] ? `: ${paragraphs[0]}` : ''}`;
-      const body = paragraphs.length > 1 ? paragraphs.slice(1).join('\n') : paragraphs.join('\n');
-      const notes = noteText ? `\n*Speaker Notes:* ${noteText}` : '';
-      slideTexts.push(`${slideHeader}\n${body}${notes}`);
-    } else {
-      slideTexts.push(`### Slide ${i + 1}\n*(Visual slide without text)*`);
-    }
+    const slideTitle = paragraphs[0] || `Slide ${i + 1}`;
+    const body = paragraphs.length > 1 ? paragraphs.slice(1).join('\n') : paragraphs.join('\n');
+    const notesStr = noteText ? `\n*Speaker Notes:* ${noteText}` : '';
+    const rawSlideText = `### Slide ${i + 1}: ${slideTitle}\n${body}${notesStr}`;
+
+    slideTexts.push(rawSlideText);
+    structuredSlides.push({
+      slideNumber: i + 1,
+      title: slideTitle.replace(/^###\s*Slide\s*\d+:?\s*/i, '').trim() || `Slide ${i + 1}`,
+      content: paragraphs.length > 0 ? paragraphs : ['(Visual slide)'],
+      notes: noteText || undefined,
+      rawText: rawSlideText,
+    });
   }
 
   const fullText = slideTexts.join('\n\n').trim();
@@ -88,6 +95,7 @@ async function parsePptxBuffer(buffer: Buffer): Promise<ExtractedDocumentResult>
     pageCount: slideFiles.length,
     wordCount: fullText.split(/\s+/).filter(Boolean).length,
     ocrApplied: false,
+    slides: structuredSlides,
   };
 }
 
@@ -139,10 +147,20 @@ function parsePptBinaryBuffer(buffer: Buffer): ExtractedDocumentResult {
 
   // Group into slides
   const slides: string[] = [];
+  const structuredSlides: SlideData[] = [];
   let currentSlide = 1;
   for (let i = 0; i < uniqueStrings.length; i += 3) {
-    const group = uniqueStrings.slice(i, i + 3).join('\n\n');
-    slides.push(`### Slide ${currentSlide++}\n${group}`);
+    const groupLines = uniqueStrings.slice(i, i + 3);
+    const group = groupLines.join('\n\n');
+    const slideTitle = groupLines[0] || `Slide ${currentSlide}`;
+    const rawSlideText = `### Slide ${currentSlide}: ${slideTitle}\n${group}`;
+    slides.push(rawSlideText);
+    structuredSlides.push({
+      slideNumber: currentSlide++,
+      title: slideTitle.replace(/^###\s*Slide\s*\d+:?\s*/i, '').trim(),
+      content: groupLines,
+      rawText: rawSlideText,
+    });
   }
 
   const fullText = slides.join('\n\n').trim();
@@ -152,6 +170,7 @@ function parsePptBinaryBuffer(buffer: Buffer): ExtractedDocumentResult {
     pageCount: slides.length || 1,
     wordCount: fullText.split(/\s+/).filter(Boolean).length,
     ocrApplied: false,
+    slides: structuredSlides,
   };
 }
 

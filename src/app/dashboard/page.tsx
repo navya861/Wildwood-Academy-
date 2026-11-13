@@ -20,6 +20,7 @@ import { Card, Badge, ProgressBar } from '@/components/ui/Card';
 import { GrowingPlant } from '@/components/ui/GrowingPlant';
 import { Course, StudyMaterial, UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { WoodlandScene } from '@/components/woodland/WoodlandScene';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -88,30 +89,13 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
-      {/* Welcome & Scholar Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-forest-800/90 via-forest-800/60 to-forest-900 border border-forest-600/40 shadow-forest relative overflow-hidden">
-        <div className="space-y-2 z-10">
-          <Badge variant="amber" className="gap-1.5 text-xs">
-            <Sparkles className="w-3.5 h-3.5 text-lantern" />
-            Circle {profile?.level || 1} Apprentice
-          </Badge>
-          <h1 className="text-2xl md:text-4xl font-serif font-bold text-parchment">
-            Welcome back, {profile?.display_name || 'Scholar'}
-          </h1>
-          <p className="text-xs md:text-sm text-sage max-w-xl">
-            The lanterns are lit across the Academy groves. Your learning journey is saved and protected.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 z-10">
-          <Link href="/groves">
-            <Button variant="primary" size="md" className="gap-2 shadow-lantern">
-              <Library className="w-4 h-4" />
-              <span>Upload Study Material</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
+      {/* Welcome & Scholar Woodland Scene Header */}
+      <WoodlandScene
+        variant="header"
+        title={`Welcome back, ${profile?.display_name || 'Scholar'}`}
+        subtitle={`The lanterns are glowing across Circle ${profile?.level || 1} Apprentice groves. Study materials, slide decks, and learning paths are saved and protected.`}
+        showExploreButtons={true}
+      />
 
       {/* Quick Metrics Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -7,6 +7,15 @@ export type QuestionType = 'multiple_choice' | 'true_false' | 'short_answer';
 export type NoteType = 'ai_generated' | 'personalized' | 'user_written';
 export type NoteFormat = 'concise' | 'detailed' | 'beginner' | 'exam' | 'flashcards';
 
+export interface SlideData {
+  slideNumber: number;
+  title: string;
+  content: string[];
+  notes?: string;
+  rawText?: string;
+  keyTakeaway?: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -55,6 +64,7 @@ export interface StudyMaterial {
     chunk_count?: number;
     ocr_applied?: boolean;
     detected_topics?: string[];
+    slides?: SlideData[];
   };
   created_at: string;
   updated_at: string;
@@ -115,6 +125,13 @@ export interface Lesson {
   source_references: { material_title: string; page?: number; excerpt?: string }[];
   order_index: number;
   publication_status: 'draft' | 'published';
+  slides?: SlideData[];
+  presentation?: {
+    material_id: string;
+    title: string;
+    original_filename: string;
+    total_slides: number;
+  };
   created_at: string;
   updated_at: string;
   is_completed?: boolean;
@@ -206,6 +223,7 @@ export interface QuizAttempt {
     correct: string;
     is_correct: boolean;
     explanation: string;
+    source_references?: string[];
   }[];
   started_at: string;
   completed_at: string;

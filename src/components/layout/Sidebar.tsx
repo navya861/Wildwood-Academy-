@@ -32,7 +32,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 hidden lg:flex flex-col border-r border-forest-600/30 bg-forest-900/60 p-4 shrink-0 min-h-[calc(100vh-4rem)]">
+    <aside className="w-64 hidden lg:flex flex-col border-r border-forest-600/30 bg-[#0D241B]/75 backdrop-blur-md p-4 shrink-0 min-h-[calc(100vh-4rem)]">
       <div className="text-xs uppercase font-mono tracking-wider text-sage/70 px-3 py-2">
         Academic Groves
       </div>

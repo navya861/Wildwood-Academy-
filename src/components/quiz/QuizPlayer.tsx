@@ -151,9 +151,19 @@ export function QuizPlayer({ quiz, onAttemptCompleted }: QuizPlayerProps) {
                     )}
                   </div>
 
-                  <div className="p-3 rounded-xl bg-forest-900/60 border border-forest-700/40 text-xs text-sage leading-relaxed mt-2">
-                    <span className="font-semibold text-lantern block mb-1">Pedagogical Explanation:</span>
-                    {item.explanation}
+                  <div className="p-3 rounded-xl bg-forest-900/60 border border-forest-700/40 text-xs text-sage leading-relaxed mt-2 space-y-1.5">
+                    <span className="font-semibold text-lantern block">Pedagogical Explanation:</span>
+                    <p>{item.explanation}</p>
+                    {item.source_references && item.source_references.length > 0 && (
+                      <div className="pt-1.5 border-t border-forest-700/30 flex flex-wrap gap-1.5 items-center">
+                        <span className="text-[11px] font-semibold text-lantern">Verified Source Citations:</span>
+                        {item.source_references.map((src: string, sIdx: number) => (
+                          <Badge key={sIdx} variant="amber" className="text-[10px] py-0 px-2 font-mono">
+                            {src}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

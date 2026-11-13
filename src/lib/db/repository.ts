@@ -389,6 +389,8 @@ export const Repository = {
           source_references: les.source_references || [],
           order_index: lesIdx,
           publication_status: 'published',
+          slides: (les as any).slides || [],
+          presentation: (les as any).presentation,
           created_at: now,
           updated_at: now,
         };
@@ -406,8 +408,40 @@ export const Repository = {
     if (!lesson) return null;
 
     const progress = db.lesson_progress.find(lp => lp.lesson_id === lessonId && lp.user_id === userId);
+
+    let slides = lesson.slides;
+    let presentation = lesson.presentation;
+
+    // Resilient slide association: if lesson doesn't have slides attached yet, check course source material
+    if ((!slides || slides.length === 0) && lesson.course_id) {
+      const course = db.courses.find(c => c.id === lesson.course_id);
+      if (course?.source_material_id) {
+        const material = db.study_materials.find(m => m.id === course.source_material_id);
+        if (material?.metadata?.slides && material.metadata.slides.length > 0) {
+          const allCourseLessons = db.lessons
+            .filter(l => l.course_id === lesson.course_id)
+            .sort((a, b) => a.order_index - b.order_index);
+
+          const lesIdx = Math.max(0, allCourseLessons.findIndex(l => l.id === lessonId));
+          const totalLessons = Math.max(1, allCourseLessons.length);
+          const slidesPerLesson = Math.ceil(material.metadata.slides.length / totalLessons);
+          const chunk = material.metadata.slides.slice(lesIdx * slidesPerLesson, (lesIdx + 1) * slidesPerLesson);
+
+          slides = chunk.length > 0 ? chunk : material.metadata.slides;
+          presentation = {
+            material_id: material.id,
+            title: material.title,
+            original_filename: material.original_filename,
+            total_slides: material.metadata.slides.length,
+          };
+        }
+      }
+    }
+
     return {
       ...lesson,
+      slides,
+      presentation,
       is_completed: progress?.completed ?? false,
     };
   },
@@ -638,6 +672,7 @@ export const Repository = {
         correct: q.correct_answer,
         is_correct: isCorrect,
         explanation: q.explanation,
+        source_references: q.source_references || [],
       });
     }
 

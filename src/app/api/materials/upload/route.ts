@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
           word_count: parsed.wordCount,
           chunk_count: chunks.length,
           ocr_applied: parsed.ocrApplied,
+          slides: parsed.slides,
         },
       });
 

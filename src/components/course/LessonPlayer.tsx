@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lesson } from '@/lib/types';
-import { CheckCircle2, Circle, Clock, BookOpen, Sparkles, ArrowLeft, ArrowRight, MessageSquare, Feather, Lightbulb } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, BookOpen, Sparkles, ArrowLeft, ArrowRight, MessageSquare, Feather, Lightbulb, Swords, Presentation } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { SlideDeckViewer } from './SlideDeckViewer';
+import { OriginalSlideView } from './OriginalSlideView';
+import { LessonContentRenderer } from './LessonContentRenderer';
 import Link from 'next/link';
 
 interface LessonPlayerProps {
@@ -28,6 +31,7 @@ export function LessonPlayer({
   const [startTime] = useState(Date.now());
   const [submitting, setSubmitting] = useState(false);
   const [knowledgeCheckAnswer, setKnowledgeCheckAnswer] = useState<number | null>(null);
+  const [studyMode, setStudyMode] = useState<'notes' | 'slides'>('slides');
 
   const handleToggleComplete = async () => {
     setSubmitting(true);
@@ -55,6 +59,8 @@ export function LessonPlayer({
       setSubmitting(false);
     }
   };
+
+  const hasSlides = !!(lesson.slides && lesson.slides.length > 0);
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -101,51 +107,114 @@ export function LessonPlayer({
         </div>
       </div>
 
-      {/* Learning Objectives Box */}
-      {lesson.learning_objectives && lesson.learning_objectives.length > 0 && (
-        <div className="p-5 rounded-2xl bg-forest-800/60 border border-forest-600/40 relative">
-          <h3 className="font-serif text-sm font-semibold text-lantern flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-lantern" />
-            Learning Objectives
-          </h3>
-          <ul className="space-y-2">
-            {lesson.learning_objectives.map((obj, i) => (
-              <li key={i} className="text-xs md:text-sm text-sage-light flex items-start gap-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-lantern mt-1.5 shrink-0" />
-                <span>{obj}</span>
-              </li>
-            ))}
-          </ul>
+      {/* Mode Selector (When presentation slides exist, default to Original Slide Deck) */}
+      {hasSlides && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 rounded-2xl bg-forest-900/80 border border-forest-600/40 shadow-md">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setStudyMode('slides')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-serif font-semibold transition-all ${
+                studyMode === 'slides'
+                  ? 'bg-forest-700 text-lantern border border-lantern/40 shadow-sm font-bold'
+                  : 'text-sage hover:text-parchment hover:bg-forest-800'
+              }`}
+            >
+              <Presentation className="w-4 h-4 text-lantern" />
+              <span>Original Slide Presentation ({lesson.slides!.length} Slides)</span>
+            </button>
+            <button
+              onClick={() => setStudyMode('notes')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-serif font-semibold transition-all ${
+                studyMode === 'notes'
+                  ? 'bg-forest-700 text-lantern border border-lantern/40 shadow-sm font-bold'
+                  : 'text-sage hover:text-parchment hover:bg-forest-800'
+              }`}
+            >
+              <BookOpen className="w-4 h-4 text-lantern" />
+              <span>Full Study Notes &amp; Exam Guide</span>
+            </button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 text-xs text-sage px-2">
+            <span className="font-mono text-[11px] bg-forest-950/80 px-2 py-0.5 rounded border border-forest-700/50">
+              {studyMode === 'slides' ? '📽️ Slide Deck (Default)' : '📖 Study Notes Mode'}
+            </span>
+          </div>
         </div>
       )}
 
-      {/* Core Lesson Teaching Content */}
-      <article className="prose prose-invert max-w-none text-parchment/90 space-y-4 leading-relaxed font-sans text-sm md:text-base">
-        {lesson.content.split('\n\n').map((paragraph, idx) => {
-          if (paragraph.startsWith('### ')) {
-            return (
-              <h3 key={idx} className="text-xl font-serif font-bold text-lantern pt-4 border-b border-forest-700/50 pb-2">
-                {paragraph.replace('### ', '')}
-              </h3>
-            );
-          }
-          if (paragraph.startsWith('#### ')) {
-            return (
-              <h4 key={idx} className="text-lg font-serif font-semibold text-sage-light pt-2">
-                {paragraph.replace('#### ', '')}
-              </h4>
-            );
-          }
-          if (paragraph.startsWith('> ')) {
-            return (
-              <blockquote key={idx} className="border-l-4 border-lantern pl-4 italic text-sage my-4">
-                {paragraph.replace('> ', '')}
-              </blockquote>
-            );
-          }
-          return <p key={idx}>{paragraph}</p>;
-        })}
-      </article>
+      {/* Main Study Workspace */}
+      {hasSlides && studyMode === 'slides' ? (
+        <div className="space-y-4">
+          <OriginalSlideView
+            slides={lesson.slides!}
+            presentation={lesson.presentation}
+            lessonTitle={lesson.title}
+            onSwitchToNotes={() => setStudyMode('notes')}
+          />
+
+          {/* Quick link banner to open full study notes */}
+          <div className="p-4 rounded-2xl bg-forest-900/80 border border-forest-700/50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-forest-800 border border-lantern/30 flex items-center justify-center text-lantern shrink-0">
+                <BookOpen className="w-5 h-5 text-lantern" />
+              </div>
+              <div>
+                <h4 className="font-serif font-bold text-sm text-parchment">
+                  Want in-depth explanations and exam notes?
+                </h4>
+                <p className="text-xs text-sage">
+                  Explore full narrative paragraphs, status codes cheat sheets, and high-frequency exam questions.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setStudyMode('notes')}
+              variant="secondary"
+              size="sm"
+              className="gap-2 shrink-0 text-lantern hover:text-lantern-light"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Open Study Notes</span>
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Core Lesson Teaching Content (Full Pedagogical Textbook) */}
+          <div className="woodland-panel rounded-3xl p-6 md:p-10 border border-forest-600/40 shadow-xl bg-forest-900/60 backdrop-blur-md">
+            <LessonContentRenderer content={lesson.content} />
+          </div>
+
+          {/* Quick link to Slide Presentation Stage when slides exist */}
+          {hasSlides && (
+            <div className="p-4 rounded-2xl bg-forest-900/80 border border-forest-700/50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-forest-800 border border-lantern/30 flex items-center justify-center text-lantern shrink-0">
+                  <Presentation className="w-5 h-5 text-lantern" />
+                </div>
+                <div>
+                  <h4 className="font-serif font-bold text-sm text-parchment">
+                    Return to Original PowerPoint Slides
+                  </h4>
+                  <p className="text-xs text-sage">
+                    Step through all {lesson.slides!.length} slides in 16:9 widescreen presentation mode.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setStudyMode('slides')}
+                variant="primary"
+                size="sm"
+                className="gap-2 shrink-0 shadow-lantern"
+              >
+                <Presentation className="w-4 h-4" />
+                <span>Open Slide Stage</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Key Terms Glossary */}
       {lesson.key_terms && lesson.key_terms.length > 0 && (
@@ -220,8 +289,23 @@ export function LessonPlayer({
         )}
       </div>
 
-      {/* Interactive Action Shortcuts (Scribe & AI Tutor) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+      {/* Interactive Action Shortcuts (Scribe, AI Tutor & Trial Grounds) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+        <Link
+          href={`/trials?lesson_id=${lesson.id}`}
+          className="flex items-center gap-3 p-4 rounded-xl bg-forest-800/50 border border-forest-600/40 hover:border-lantern/50 transition-all group"
+        >
+          <div className="w-10 h-10 rounded-lg bg-forest-700 flex items-center justify-center text-lantern group-hover:scale-105 transition-transform">
+            <Swords className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-parchment group-hover:text-lantern transition-colors">
+              Grounded Lesson Quiz
+            </h4>
+            <p className="text-xs text-sage">Test lore directly derived from this material.</p>
+          </div>
+        </Link>
+
         <Link
           href={`/scribe?lesson_id=${lesson.id}`}
           className="flex items-center gap-3 p-4 rounded-xl bg-forest-800/50 border border-forest-600/40 hover:border-lantern/50 transition-all group"
@@ -231,9 +315,9 @@ export function LessonPlayer({
           </div>
           <div>
             <h4 className="text-sm font-semibold text-parchment group-hover:text-lantern transition-colors">
-              Penn Notes in Scribe&apos;s Corner
+              Penn Notes in Scribe
             </h4>
-            <p className="text-xs text-sage">Generate revision sheets or write personal takeaways.</p>
+            <p className="text-xs text-sage">Generate revision sheets or personal takeaways.</p>
           </div>
         </Link>
 
@@ -246,9 +330,9 @@ export function LessonPlayer({
           </div>
           <div>
             <h4 className="text-sm font-semibold text-parchment group-hover:text-lantern transition-colors">
-              Ask the Forest Guide
+              Ask Forest Guide
             </h4>
-            <p className="text-xs text-sage">Discuss this lesson with your source-grounded AI tutor.</p>
+            <p className="text-xs text-sage">Discuss this lesson with your AI tutor.</p>
           </div>
         </Link>
       </div>

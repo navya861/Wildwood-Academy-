@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { GlitterCursor } from '../ui/GlitterCursor';
+import { WorldBackground } from '../woodland/WorldBackground';
 import { UserProfile } from '@/lib/types';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -51,7 +52,10 @@ export function AppShell({ children }: AppShellProps) {
   const isAuthPage = pathname?.startsWith('/auth') || pathname === '/';
 
   return (
-    <div className="min-h-screen bg-forest-900 text-parchment flex flex-col relative selection:bg-lantern/30 selection:text-lantern-glow">
+    <div className="min-h-screen bg-[#07170F] text-parchment flex flex-col relative selection:bg-lantern/30 selection:text-lantern-glow overflow-x-hidden">
+      {/* Global Enchanted Woodland World Background: Forest, Castle, Hut, Elves & Dragonflies on EVERY interface */}
+      <WorldBackground />
+
       {/* Pixie Trail Particle Glitter Effect */}
       <GlitterCursor />
 
@@ -59,10 +63,10 @@ export function AppShell({ children }: AppShellProps) {
       <Navbar user={user} onLogout={user ? handleLogout : undefined} />
 
       {/* Main Workspace Area */}
-      <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
+      <div className="flex-1 flex max-w-[1600px] w-full mx-auto relative z-10">
         {!isAuthPage && <Sidebar />}
 
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 lg:pb-8">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 lg:pb-8 relative z-10">
           {children}
         </main>
       </div>

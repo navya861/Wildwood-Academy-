@@ -160,6 +160,19 @@ function TrialsContent() {
             </select>
           </div>
 
+          <div>
+            <label className="block text-[11px] text-sage mb-1">Question Count</label>
+            <select
+              value={questionCount}
+              onChange={(e) => setQuestionCount(parseInt(e.target.value, 10))}
+              className="w-full bg-forest-900 border border-forest-600/50 rounded-xl px-3 py-2 text-xs text-parchment focus:outline-none focus:ring-1 focus:ring-lantern"
+            >
+              <option value="3">3 Questions (Quick Sprint)</option>
+              <option value="5">5 Questions (Standard Trial)</option>
+              <option value="10">10 Questions (Mastery Exam)</option>
+            </select>
+          </div>
+
           <div className="flex items-end">
             <Button
               onClick={handleGenerateQuiz}

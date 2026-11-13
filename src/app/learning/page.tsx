@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BookOpenCheck, Clock, Award, ArrowRight, Library, Sparkles } from 'lucide-react';
+import { BookOpenCheck, Clock, Award, ArrowRight, Library, Sparkles, Layers, Presentation } from 'lucide-react';
 import { Course } from '@/lib/types';
 import { Card, Badge, ProgressBar } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -37,17 +37,17 @@ export default function LearningPathsPage() {
             </Badge>
           </div>
           <h1 className="text-3xl font-serif font-bold text-parchment">
-            Enchanted Learning Paths
+            Enchanted Learning Paths &amp; Presentation Decks
           </h1>
           <p className="text-xs md:text-sm text-sage mt-1">
-            Explore structured courses synthesized by the Master Instructor from your uploaded materials.
+            Study complete PowerPoint decks as whole presentations with all slides and structured exam notes.
           </p>
         </div>
 
         <Link href="/groves">
           <Button variant="secondary" size="sm" className="gap-2">
             <Library className="w-4 h-4" />
-            <span>Generate New from Scrolls</span>
+            <span>Upload New PPTX</span>
           </Button>
         </Link>
       </div>
@@ -76,7 +76,7 @@ export default function LearningPathsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((c) => (
             <Card
               key={c.id}
@@ -85,8 +85,9 @@ export default function LearningPathsPage() {
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Badge variant="sage" className="capitalize">
-                    {c.level || 'Intermediate'}
+                  <Badge variant="amber" className="flex items-center gap-1 font-mono text-[10px]">
+                    <Presentation className="w-3 h-3 text-lantern" />
+                    <span>Whole PPT Deck</span>
                   </Badge>
                   <span className="flex items-center gap-1 text-xs text-sage font-mono">
                     <Clock className="w-3.5 h-3.5" />
@@ -95,26 +96,24 @@ export default function LearningPathsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-serif text-xl font-bold text-parchment line-clamp-1">
+                  <h3 className="font-serif text-lg md:text-xl font-bold text-parchment line-clamp-2 leading-snug">
                     {c.title}
                   </h3>
-                  <p className="text-xs text-sage mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-sage mt-2 line-clamp-3 leading-relaxed">
                     {c.description}
                   </p>
                 </div>
               </div>
 
-              <div className="pt-6 space-y-3">
+              <div className="pt-6 space-y-3 border-t border-forest-700/40 mt-4">
                 <ProgressBar value={c.progress || 0} showText color="lantern" />
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-sage truncate max-w-[180px]">
-                    Scroll: {c.source_material_title || 'Enshrined Document'}
-                  </span>
-                  <Link href={`/learning/${c.id}`}>
-                    <Button variant="primary" size="sm" className="gap-1.5 shadow-lantern">
-                      <span>View Outline</span>
-                      <ArrowRight className="w-4 h-4" />
+                  <Link href={`/learning/${c.id}`} className="w-full">
+                    <Button variant="primary" size="sm" className="w-full gap-2 shadow-lantern text-xs justify-center">
+                      <Presentation className="w-4 h-4" />
+                      <span>Open Whole PPT Deck</span>
+                      <ArrowRight className="w-3.5 h-3.5 ml-auto" />
                     </Button>
                   </Link>
                 </div>

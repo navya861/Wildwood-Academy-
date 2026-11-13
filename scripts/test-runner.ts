@@ -92,9 +92,26 @@ Deciduous species adapt their chlorophyll concentrations across seasonal transit
   );
 
   assert(parsedPptx.pageCount === 2, `PPTX parser identified ${parsedPptx.pageCount} slides`);
+  assert(Boolean(parsedPptx.slides && parsedPptx.slides.length === 2), 'PPTX parser extracted structured SlideData array');
+  assert(parsedPptx.slides![0].slideNumber === 1, 'SlideData has accurate slide numbers');
   assert(parsedPptx.text.includes('Slide 1: Botanical Principles'), 'PPTX parser extracted Slide 1 header and title');
   assert(parsedPptx.text.includes('Mycorrhizal Symbiosis'), 'PPTX parser extracted Slide 2 text content');
   assert(parsedPptx.text.includes('Remember kin seedling allocation hypothesis'), 'PPTX parser extracted slide speaker notes');
+
+  // Test PPT slide-aware course generation
+  const pptCourseOutline = await AIService.generateCourseOutline(
+    'botany_presentation.pptx',
+    parsedPptx.text,
+    {
+      materialId: 'test-mat-ppt',
+      originalFilename: 'botany_presentation.pptx',
+      slides: parsedPptx.slides,
+    }
+  );
+  assert(pptCourseOutline.modules.length > 0, 'Generated course from PPT slides');
+  const firstPptLesson = pptCourseOutline.modules[0].lessons[0];
+  assert(Boolean(firstPptLesson.slides && firstPptLesson.slides.length > 0), 'PPT course lesson has attached slides');
+  assert(Boolean(firstPptLesson.presentation && firstPptLesson.presentation.total_slides === 2), 'PPT course lesson has presentation metadata');
 
   // Test Legacy PowerPoint PPT binary parsing
   console.log('  Testing Legacy PowerPoint (.ppt) binary extraction...');
@@ -209,6 +226,7 @@ Deciduous species adapt their chlorophyll concentrations across seasonal transit
   console.log('\n--- Suite 6: Trial Grounds & Secure Server-Side Grading ---');
   const quizObj = await AIService.generateQuiz(materialA.title, sampleDocText, 'medium', 3);
   assert(quizObj.questions.length >= 3, 'Synthesized quiz questions');
+  assert(Boolean(quizObj.questions[0].source_references && quizObj.questions[0].source_references.length > 0), 'Quiz questions include verified source references');
 
   const savedQuiz = await Repository.createQuiz(
     userA.id,

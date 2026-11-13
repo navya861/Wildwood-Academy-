@@ -37,7 +37,12 @@ export async function POST(req: NextRequest) {
 
     const outline = await AIService.generateCourseOutline(
       material.title,
-      material.extracted_text
+      material.extracted_text,
+      {
+        materialId: material.id,
+        originalFilename: material.original_filename,
+        slides: material.metadata?.slides,
+      }
     );
 
     await Repository.updateJob(session.id, job.id, { progress: 70 });

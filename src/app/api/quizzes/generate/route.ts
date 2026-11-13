@@ -19,24 +19,37 @@ export async function POST(req: NextRequest) {
       const lesson = await Repository.getLesson(session.id, lesson_id);
       if (lesson) {
         textForQuiz = `${lesson.title}\n\n${lesson.content}`;
+        if (lesson.slides && lesson.slides.length > 0) {
+          textForQuiz += '\n\n' + lesson.slides.map(s => s.rawText).join('\n\n');
+        }
         quizTitle = `Trial: ${lesson.title}`;
       }
     } else if (material_id) {
       const material = await Repository.getMaterial(session.id, material_id);
-      if (material?.extracted_text) {
-        textForQuiz = material.extracted_text;
-        quizTitle = `Trial: ${material.title}`;
+      if (!material) {
+        return NextResponse.json({ error: 'Study material not found.' }, { status: 404 });
       }
+      if (material.processing_status !== 'completed' || !material.extracted_text || material.extracted_text.trim().length < 50) {
+        return NextResponse.json({
+          error: 'This study material is still processing or has no readable text. Please wait until processing completes before generating a trial.'
+        }, { status: 400 });
+      }
+      textForQuiz = material.extracted_text;
+      quizTitle = `Trial: ${material.title}`;
     } else if (course_id) {
       const course = await Repository.getCourse(session.id, course_id);
       if (course) {
-        textForQuiz = `${course.title}\n${course.description}`;
+        const courseLessons = course.modules?.flatMap(m => m.lessons || []) || [];
+        const lessonTexts = courseLessons.map(l => `${l.title}\n${l.content}`).join('\n\n');
+        textForQuiz = `${course.title}\n${course.description}\n\n${lessonTexts}`;
         quizTitle = `Comprehensive Trial: ${course.title}`;
       }
     }
 
-    if (!textForQuiz) {
-      return NextResponse.json({ error: 'No content found to generate quiz questions from.' }, { status: 400 });
+    if (!textForQuiz || textForQuiz.trim().length < 50) {
+      return NextResponse.json({
+        error: 'No sufficient study material found to generate grounded quiz questions. Please ensure your material has completed text processing.'
+      }, { status: 400 });
     }
 
     const generated = await AIService.generateQuiz(
@@ -65,6 +78,7 @@ export async function POST(req: NextRequest) {
         correct_answer: q.correct_answer,
         grading_criteria: q.grading_criteria || '',
         explanation: q.explanation || 'Review the lesson and reference materials.',
+        source_references: q.source_references || [],
         order_index: i,
       }))
     );

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Course } from '@/lib/types';
-import { BookOpenCheck, Clock, CheckCircle2, Circle, ArrowLeft, ArrowRight, Swords, Feather, Bot, Trash2 } from 'lucide-react';
+import { BookOpenCheck, Clock, CheckCircle2, Circle, ArrowLeft, ArrowRight, Swords, Feather, Bot, Trash2, Presentation, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge, ProgressBar } from '@/components/ui/Card';
 
@@ -43,7 +43,7 @@ export default function CourseDetailPage() {
   if (loading) {
     return (
       <div className="p-12 text-center text-xs text-sage animate-pulse">
-        Unrolling course scrolls...
+        Unrolling presentation scrolls...
       </div>
     );
   }
@@ -64,6 +64,7 @@ export default function CourseDetailPage() {
 
   const allLessons = course.modules?.flatMap(m => m.lessons || []) || [];
   const firstUnfinishedLesson = allLessons.find(l => !l.is_completed) || allLessons[0];
+  const totalSlides = firstUnfinishedLesson?.slides?.length || (firstUnfinishedLesson as any)?.presentation?.total_slides || 18;
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -74,20 +75,21 @@ export default function CourseDetailPage() {
           className="text-xs text-sage hover:text-lantern flex items-center gap-1.5 transition-colors mb-3"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Back to All Learning Paths
+          Back to All Presentation Decks
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant="amber" className="capitalize">
-                {course.level} Level
+              <Badge variant="amber" className="capitalize flex items-center gap-1 font-mono text-[10px]">
+                <Presentation className="w-3 h-3 text-lantern" />
+                <span>Whole PPT Deck · {totalSlides} Slides</span>
               </Badge>
               <span className="text-xs text-sage font-mono">
                 {course.estimated_hours} Hours Estimated
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-parchment">
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-parchment">
               {course.title}
             </h1>
             <p className="text-xs md:text-sm text-sage max-w-2xl leading-relaxed">
@@ -98,8 +100,9 @@ export default function CourseDetailPage() {
           <div className="flex items-center gap-2 shrink-0">
             {firstUnfinishedLesson && (
               <Link href={`/learning/${course.id}/lesson/${firstUnfinishedLesson.id}`}>
-                <Button variant="primary" size="md" className="gap-2 shadow-lantern">
-                  <span>{firstUnfinishedLesson.is_completed ? 'Review Lesson' : 'Resume Lesson'}</span>
+                <Button variant="primary" size="md" className="gap-2 shadow-lantern text-xs">
+                  <Presentation className="w-4 h-4 text-lantern" />
+                  <span>Launch Whole PPT ({totalSlides} Slides)</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -119,7 +122,7 @@ export default function CourseDetailPage() {
       {/* Progress Card */}
       <div className="p-5 rounded-2xl bg-forest-800/60 border border-forest-600/40 space-y-2">
         <div className="flex items-center justify-between text-xs text-sage">
-          <span className="font-semibold text-parchment">Overall Path Completion</span>
+          <span className="font-semibold text-parchment">Presentation Exploration Progress</span>
           <span className="font-mono text-lantern">{course.progress || 0}% Complete</span>
         </div>
         <ProgressBar value={course.progress || 0} color="lantern" />
@@ -128,29 +131,29 @@ export default function CourseDetailPage() {
       {/* Course Actions Bar (Quiz & Tutor) */}
       <div className="flex flex-wrap items-center gap-3">
         <Link href={`/trials?course_id=${course.id}`}>
-          <Button variant="secondary" size="sm" className="gap-1.5">
+          <Button variant="secondary" size="sm" className="gap-1.5 text-xs">
             <Swords className="w-4 h-4 text-lantern" />
             <span>Generate Trial Quiz</span>
           </Button>
         </Link>
         <Link href={`/scribe?course_id=${course.id}`}>
-          <Button variant="secondary" size="sm" className="gap-1.5">
+          <Button variant="secondary" size="sm" className="gap-1.5 text-xs">
             <Feather className="w-4 h-4 text-sage" />
-            <span>Open Scribe Notes</span>
+            <span>Open Scribe Notes &amp; Flashcards</span>
           </Button>
         </Link>
         <Link href={`/tutor?course_id=${course.id}`}>
-          <Button variant="secondary" size="sm" className="gap-1.5">
+          <Button variant="secondary" size="sm" className="gap-1.5 text-xs">
             <Bot className="w-4 h-4 text-lantern" />
-            <span>Discuss Course with Tutor</span>
+            <span>Ask Tutor About This Deck</span>
           </Button>
         </Link>
       </div>
 
-      {/* Modules & Lessons Outline */}
+      {/* Modules & Whole Deck Outline */}
       <div className="space-y-6 pt-2">
         <h2 className="font-serif text-2xl font-bold text-parchment">
-          Curriculum Outline
+          Presentation Deck &amp; Study Guide
         </h2>
 
         {course.modules?.map((mod, modIdx) => (
@@ -161,7 +164,7 @@ export default function CourseDetailPage() {
             {/* Module Header */}
             <div className="p-5 bg-forest-800/80 border-b border-forest-600/40">
               <span className="text-[11px] font-mono text-lantern uppercase tracking-wider block">
-                Module {modIdx + 1}
+                Primary Module
               </span>
               <h3 className="font-serif text-lg font-bold text-parchment mt-0.5">
                 {mod.title}
@@ -173,34 +176,35 @@ export default function CourseDetailPage() {
 
             {/* Lessons List */}
             <div className="divide-y divide-forest-700/30">
-              {mod.lessons?.map((les, lesIdx) => (
+              {mod.lessons?.map((les) => (
                 <div
                   key={les.id}
-                  className="p-4 hover:bg-forest-800/40 transition-colors flex items-center justify-between gap-4"
+                  className="p-5 hover:bg-forest-800/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex items-start sm:items-center gap-3.5 min-w-0">
                     {les.is_completed ? (
-                      <CheckCircle2 className="w-5 h-5 text-moss-400 shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-moss-400 shrink-0 mt-0.5 sm:mt-0" />
                     ) : (
-                      <Circle className="w-5 h-5 text-sage/40 shrink-0" />
+                      <Circle className="w-5 h-5 text-sage/40 shrink-0 mt-0.5 sm:mt-0" />
                     )}
 
                     <div className="min-w-0">
                       <Link
                         href={`/learning/${course.id}/lesson/${les.id}`}
-                        className="text-xs md:text-sm font-semibold text-parchment hover:text-lantern transition-colors truncate block"
+                        className="text-sm font-serif font-bold text-parchment hover:text-lantern transition-colors truncate block"
                       >
-                        {modIdx + 1}.{lesIdx + 1} {les.title}
+                        {les.title}
                       </Link>
-                      <span className="text-[11px] text-sage font-mono">
-                        {les.estimated_duration || 15} mins · {les.learning_objectives?.length || 2} objectives
+                      <span className="text-xs text-sage font-mono block mt-0.5">
+                        {les.slides?.length || totalSlides} Original Slides in Deck · Complete Exam Study Notes Included
                       </span>
                     </div>
                   </div>
 
                   <Link href={`/learning/${course.id}/lesson/${les.id}`}>
-                    <Button variant="ghost" size="sm" className="gap-1 shrink-0">
-                      <span>{les.is_completed ? 'Review' : 'Start'}</span>
+                    <Button variant="primary" size="sm" className="gap-2 shrink-0 shadow-lantern text-xs">
+                      <Presentation className="w-3.5 h-3.5" />
+                      <span>{les.is_completed ? 'Reopen Deck' : 'Open Deck (All Slides)'}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
                   </Link>
